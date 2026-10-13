@@ -1,0 +1,30 @@
+blocks (val_start..val_end Time_step): [(189, 280), (281, 372), (373, 464), (465, 556), (557, 648), (649, 740), (741, 832), (833, 924)]
+[   20s] Target_1 FI   n_feat=   92 block AUC=[0.585, 0.517, 0.502, 0.527, 0.605, 0.471, 0.603, 0.52] last5 mean=0.545
+[   56s] Target_1 KE   n_feat=  252 block AUC=[0.395, 0.482, 0.494, 0.572, 0.456, 0.638, 0.451, 0.585] last5 mean=0.540
+  OOM → retry with memory_saving_mode
+  OOM → retry with memory_saving_mode
+  OOM → retry with memory_saving_mode
+  OOM → retry with {'memory_saving_mode': True}
+[  313s] Target_1 SH   n_feat=  997 block AUC=[0.504, 0.43, 0.48, 0.682, 0.508, 0.523, 0.531, 0.608] last5 mean=0.570
+[  351s] Target_1 WE   n_feat=   77 block AUC=[0.445, 0.464, 0.628, 0.463, 0.56, 0.542, 0.367, 0.421] last5 mean=0.471
+  OOM → retry with memory_saving_mode
+  OOM → retry with {'memory_saving_mode': True}
+  OOM → retry with memory_saving_mode
+[  626s] Target_1 all  n_feat= 1412 block AUC=[0.502, 0.525, 0.531, 0.56, 0.577, 0.563, 0.621, 0.617] last5 mean=0.587
+[  645s] Target_2 FI   n_feat=   74 block AUC=[0.983, 0.916, 0.964, 0.94, 0.969, 0.992, 0.907, 0.915] last5 mean=0.945
+[  676s] Target_2 KE   n_feat=  202 block AUC=[0.986, 0.96, 0.976, 0.97, 0.974, 0.991, 0.949, 0.921] last5 mean=0.961
+  OOM → retry with memory_saving_mode
+  OOM → retry with memory_saving_mode
+  OOM → retry with {'memory_saving_mode': True}
+[  941s] Target_2 SH   n_feat=  798 block AUC=[0.988, 0.959, 0.983, 0.976, 0.974, 0.979, 0.976, 0.956] last5 mean=0.972
+[  977s] Target_2 WE   n_feat=   62 block AUC=[0.976, 0.939, 0.951, 0.905, 0.968, 0.981, 0.901, 0.891] last5 mean=0.929
+  OOM → retry with memory_saving_mode
+  OOM → retry with memory_saving_mode
+  OOM → retry with {'memory_saving_mode': True}
+  OOM → retry with memory_saving_mode
+  OOM → retry with {'memory_saving_mode': True}
+  OOM → retry with memory_saving_mode
+  OOM → retry with {'memory_saving_mode': True}
+  OOM → retry with memory_saving_mode
+[ 1440s] Target_2 all  n_feat= 1130 block AUC=[0.993, 0.966, 0.975, 0.979, 0.974, 0.978, 0.972, 0.957] last5 mean=0.972
+saved results/tabpfn_experts.csv (1440s)

@@ -16,3 +16,11 @@
 [  131s] subset+exaone    random     Target_2 n_feat=415 auc=0.963
 [  140s] subset+exaone    time       Target_1 n_feat=415 auc=0.618
 [  148s] subset+exaone    time       Target_2 n_feat=415 auc=0.930
+[  182s] full_raw+exaone  stratified Target_1 n_feat=445 auc=0.804
+[  192s] full_raw+exaone  stratified Target_2 n_feat=445 auc=0.973
+[  201s] full_raw+exaone  random     Target_1 n_feat=445 auc=0.811
+[  212s] full_raw+exaone  random     Target_2 n_feat=445 auc=0.973
+[  222s] full_raw+exaone  time       Target_1 n_feat=445 auc=0.466
+[  231s] full_raw+exaone  time       Target_2 n_feat=445 auc=0.950
+  OOM → retry with memory_saving_mode
+saved results/tabpfn_results.json (264s)

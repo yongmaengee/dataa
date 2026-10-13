@@ -1,0 +1,34 @@
+/Users/anjungbeom/Desktop/dataa/.venv/lib/python3.12/site-packages/umap/umap_.py:1952: UserWarning: n_jobs value 1 overridden to 1 by setting random_state. Use no seed for parallelism.
+  warn(
+level {'n_feat': 284, 'pca90': 39, 'twonn_id': 7.0, 'knn_auc': 0.484, 'time_locality': 0.889, 'knn_auc_umap': 0.497, 'time_locality_umap': 0.965}
+/Users/anjungbeom/Desktop/dataa/.venv/lib/python3.12/site-packages/umap/umap_.py:1952: UserWarning: n_jobs value 1 overridden to 1 by setting random_state. Use no seed for parallelism.
+  warn(
+change {'n_feat': 848, 'pca90': 179, 'twonn_id': 25.9, 'knn_auc': 0.521, 'time_locality': 0.103, 'knn_auc_umap': 0.493, 'time_locality_umap': 0.095}
+/Users/anjungbeom/Desktop/dataa/.venv/lib/python3.12/site-packages/umap/umap_.py:1952: UserWarning: n_jobs value 1 overridden to 1 by setting random_state. Use no seed for parallelism.
+  warn(
+zscore {'n_feat': 566, 'pca90': 83, 'twonn_id': 11.9, 'knn_auc': 0.523, 'time_locality': 0.2, 'knn_auc_umap': 0.515, 'time_locality_umap': 0.175}
+/Users/anjungbeom/Desktop/dataa/.venv/lib/python3.12/site-packages/umap/umap_.py:1952: UserWarning: n_jobs value 1 overridden to 1 by setting random_state. Use no seed for parallelism.
+  warn(
+change+zscore {'n_feat': 1412, 'pca90': 181, 'twonn_id': 25.0, 'knn_auc': 0.514, 'time_locality': 0.13, 'knn_auc_umap': 0.53, 'time_locality_umap': 0.106}
+/Users/anjungbeom/Desktop/dataa/.venv/lib/python3.12/site-packages/umap/umap_.py:1952: UserWarning: n_jobs value 1 overridden to 1 by setting random_state. Use no seed for parallelism.
+  warn(
+tailored {'n_feat': 255, 'pca90': 88, 'twonn_id': 7.8, 'knn_auc': 0.493, 'time_locality': 0.627, 'knn_auc_umap': 0.436, 'time_locality_umap': 0.968}
+
+== linear CKA (조합 간 기하 유사도)
+                level  change  zscore  change+zscore  tailored
+level           1.00    0.34    0.45           0.42      0.51
+change          0.34    1.00    0.77           0.93      0.37
+zscore          0.45    0.77    1.00           0.95      0.33
+change+zscore   0.42    0.93    0.95           1.00      0.37
+tailored        0.51    0.37    0.33           0.37      1.00
+
+== manifold 지표 (T1)
+                n_feat  pca90  twonn_id  knn_auc  time_locality  knn_auc_umap  time_locality_umap
+level           284.0   39.0       7.0    0.484          0.889         0.497               0.965
+change          848.0  179.0      25.9    0.521          0.103         0.493               0.095
+zscore          566.0   83.0      11.9    0.523          0.200         0.515               0.175
+change+zscore  1412.0  181.0      25.0    0.514          0.130         0.530               0.106
+tailored        255.0   88.0       7.8    0.493          0.627         0.436               0.968
+
+참고: 무작위 기준 time_locality ≈ 0.059
+saved results/manifold_T1.png, results/manifold_T1.json

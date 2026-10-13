@@ -1,0 +1,104 @@
+walk-forward folds (train_end, val_start, val_end Time_step): [(461, 465, 556), (553, 557, 648), (645, 649, 740), (737, 741, 832), (829, 833, 924)]
+[    8s] tailored (기존 subset)                   n_feat= 252 Target_1=0.508±0.034 Target_2=0.950±0.012
+[   17s] level / none                           n_feat= 284 Target_1=0.448±0.017 Target_2=0.960±0.009
+[   25s] level / cluster                        n_feat= 250 Target_1=0.452±0.019 Target_2=0.957±0.009
+[   31s] level / cluster+pca                    n_feat=  73 Target_1=0.497±0.061 Target_2=0.954±0.012
+[   51s] change / none                          n_feat= 848 Target_1=0.547±0.029 Target_2=0.967±0.008
+[   71s] change / cluster                       n_feat= 746 Target_1=0.538±0.018 Target_2=0.967±0.008
+[   79s] change / cluster+pca                   n_feat= 215 Target_1=0.530±0.044 Target_2=0.956±0.010
+[   94s] zscore / none                          n_feat= 566 Target_1=0.581±0.033 Target_2=0.962±0.010
+[  108s] zscore / cluster                       n_feat= 498 Target_1=0.580±0.042 Target_2=0.964±0.009
+[  115s] zscore / cluster+pca                   n_feat= 144 Target_1=0.497±0.064 Target_2=0.956±0.012
+[  143s] level+change / none                    n_feat=1130 Target_1=0.535±0.022 Target_2=0.968±0.007
+[  167s] level+change / cluster                 n_feat= 994 Target_1=0.527±0.018 Target_2=0.967±0.007
+[  177s] level+change / cluster+pca             n_feat= 286 Target_1=0.523±0.044 Target_2=0.957±0.010
+[  213s] change+zscore / none                   n_feat=1412 Target_1=0.579±0.019 Target_2=0.966±0.009
+[  244s] change+zscore / cluster                n_feat=1242 Target_1=0.562±0.017 Target_2=0.967±0.008
+[  255s] change+zscore / cluster+pca            n_feat= 357 Target_1=0.522±0.057 Target_2=0.959±0.010
+[  298s] all / none                             n_feat=1694 Target_1=0.543±0.016 Target_2=0.965±0.008
+[  334s] all / cluster                          n_feat=1490 Target_1=0.553±0.017 Target_2=0.966±0.008
+[  346s] all / cluster+pca                      n_feat= 428 Target_1=0.515±0.053 Target_2=0.960±0.010
+[  360s] [zscore / none] -FI                    n_feat= 530 Target_1=0.602±0.049 Target_2=0.961±0.010
+[  373s] [zscore / none] -KE                    n_feat= 466 Target_1=0.577±0.041 Target_2=0.960±0.011
+[  380s] [zscore / none] -SH                    n_feat= 168 Target_1=0.551±0.017 Target_2=0.961±0.010
+[  394s] [zscore / none] -WE                    n_feat= 536 Target_1=0.563±0.031 Target_2=0.962±0.010
+[  409s] [zscore / none] -CAL                   n_feat= 564 Target_1=0.574±0.031 Target_2=0.955±0.012
+[  414s] [zscore / none] only FI+CAL            n_feat=  38 Target_1=0.514±0.053 Target_2=0.928±0.013
+[  420s] [zscore / none] only KE+CAL            n_feat= 102 Target_1=0.511±0.046 Target_2=0.961±0.011
+[  431s] [zscore / none] only SH+CAL            n_feat= 400 Target_1=0.569±0.043 Target_2=0.959±0.011
+[  435s] [zscore / none] only WE+CAL            n_feat=  32 Target_1=0.561±0.023 Target_2=0.923±0.020
+[  461s] [level+change / none] -FI              n_feat=1058 Target_1=0.490±0.028 Target_2=0.966±0.008
+[  485s] [level+change / none] -KE              n_feat= 930 Target_1=0.543±0.031 Target_2=0.964±0.008
+[  495s] [level+change / none] -SH              n_feat= 334 Target_1=0.564±0.018 Target_2=0.961±0.012
+[  522s] [level+change / none] -WE              n_feat=1070 Target_1=0.534±0.022 Target_2=0.968±0.007
+[  550s] [level+change / none] -CAL             n_feat=1128 Target_1=0.544±0.025 Target_2=0.967±0.007
+[  555s] [level+change / none] only FI+CAL      n_feat=  74 Target_1=0.559±0.039 Target_2=0.940±0.016
+[  563s] [level+change / none] only KE+CAL      n_feat= 202 Target_1=0.503±0.009 Target_2=0.960±0.013
+[  584s] [level+change / none] only SH+CAL      n_feat= 798 Target_1=0.494±0.033 Target_2=0.963±0.009
+[  589s] [level+change / none] only WE+CAL      n_feat=  62 Target_1=0.500±0.019 Target_2=0.919±0.021
+[  609s] [zscore / none] +exaone                n_feat= 726 Target_1=0.565±0.035 Target_2=0.962±0.011
+[  641s] [level+change / none] +exaone          n_feat=1290 Target_1=0.521±0.012 Target_2=0.968±0.008
+
+== Stage 1 (기준: level / none = 원본 그대로)
+                             n_feat  Target_1_mean  Target_1_diff_vs_ref  Target_1_diff_se  Target_2_mean  Target_2_diff_vs_ref  Target_2_diff_se
+config                                                                                                                                           
+tailored (기존 subset)            252          0.508                 0.060             0.034          0.950                -0.011             0.009
+level / none                    284          0.448                 0.000             0.000          0.960                 0.000             0.000
+level / cluster                 250          0.452                 0.004             0.014          0.957                -0.003             0.002
+level / cluster+pca              73          0.497                 0.048             0.053          0.954                -0.006             0.006
+change / none                   848          0.547                 0.099             0.031          0.967                 0.007             0.002
+change / cluster                746          0.538                 0.090             0.025          0.967                 0.007             0.003
+change / cluster+pca            215          0.530                 0.081             0.044          0.956                -0.004             0.002
+zscore / none                   566          0.581                 0.133             0.030          0.962                 0.002             0.006
+zscore / cluster                498          0.580                 0.132             0.041          0.964                 0.004             0.006
+zscore / cluster+pca            144          0.497                 0.049             0.060          0.956                -0.004             0.007
+level+change / none            1130          0.535                 0.087             0.022          0.968                 0.008             0.003
+level+change / cluster          994          0.527                 0.079             0.019          0.967                 0.007             0.002
+level+change / cluster+pca      286          0.523                 0.075             0.044          0.957                -0.004             0.004
+change+zscore / none           1412          0.579                 0.131             0.015          0.966                 0.006             0.004
+change+zscore / cluster        1242          0.562                 0.113             0.017          0.967                 0.007             0.004
+change+zscore / cluster+pca     357          0.522                 0.074             0.054          0.959                -0.002             0.004
+all / none                     1694          0.543                 0.095             0.013          0.965                 0.004             0.004
+all / cluster                  1490          0.553                 0.105             0.016          0.966                 0.006             0.004
+all / cluster+pca               428          0.515                 0.067             0.048          0.960                -0.000             0.004
+
+== Stage 2 Target_1
+                             n_feat  Target_1_mean  Target_1_diff_vs_ref  Target_1_diff_se
+config                                                                                    
+[zscore / none] all             566          0.581                 0.000             0.000
+[zscore / none] -FI             530          0.602                 0.021             0.022
+[zscore / none] -KE             466          0.577                -0.004             0.015
+[zscore / none] -SH             168          0.551                -0.030             0.027
+[zscore / none] -WE             536          0.563                -0.018             0.006
+[zscore / none] -CAL            564          0.574                -0.007             0.006
+[zscore / none] only FI+CAL      38          0.514                -0.067             0.073
+[zscore / none] only KE+CAL     102          0.511                -0.069             0.027
+[zscore / none] only SH+CAL     400          0.569                -0.011             0.018
+[zscore / none] only WE+CAL      32          0.561                -0.020             0.028
+
+== Stage 3 Target_1
+                         n_feat  Target_1_mean  Target_1_diff_vs_ref  Target_1_diff_se
+config                                                                                
+[zscore / none]             566          0.581                 0.000             0.000
+[zscore / none] +exaone     726          0.565                -0.016             0.017
+
+== Stage 2 Target_2
+                                   n_feat  Target_2_mean  Target_2_diff_vs_ref  Target_2_diff_se
+config                                                                                          
+[level+change / none] all            1130          0.968                 0.000             0.000
+[level+change / none] -FI            1058          0.966                -0.002             0.001
+[level+change / none] -KE             930          0.964                -0.004             0.004
+[level+change / none] -SH             334          0.961                -0.007             0.006
+[level+change / none] -WE            1070          0.968                -0.000             0.001
+[level+change / none] -CAL           1128          0.967                -0.001             0.001
+[level+change / none] only FI+CAL      74          0.940                -0.028             0.010
+[level+change / none] only KE+CAL     202          0.960                -0.008             0.006
+[level+change / none] only SH+CAL     798          0.963                -0.005             0.005
+[level+change / none] only WE+CAL      62          0.919                -0.049             0.017
+
+== Stage 3 Target_2
+                               n_feat  Target_2_mean  Target_2_diff_vs_ref  Target_2_diff_se
+config                                                                                      
+[level+change / none]            1130          0.968                   0.0             0.000
+[level+change / none] +exaone    1290          0.968                  -0.0             0.001
+total 641s

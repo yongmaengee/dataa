@@ -1,0 +1,15 @@
+[    5s] mlp_flat      AUC=0.471±0.040 folds=[0.526, 0.374, 0.495, 0.382, 0.577] params=184865
+[   36s] conv1d        AUC=0.565±0.075 folds=[0.551, 0.454, 0.716, 0.357, 0.749] params=38785
+[   65s] conv2d        AUC=0.524±0.062 folds=[0.514, 0.544, 0.544, 0.316, 0.702] params=45121
+/Users/anjungbeom/Desktop/dataa/src/conv2d.py:64: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /Users/runner/work/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:821.)
+  return float(torch.tanh(self.attn.gate)) if self.kind == "conv2d_xattn" else None
+[   89s] conv2d_xattn  AUC=0.563±0.059 folds=[0.497, 0.631, 0.527, 0.408, 0.753] params=26978 gate=+0.002
+
+== T1 walk-forward AUC (참고: xgb[base] 0.580±0.019, tabpfn[base] 0.587±0.013)
+                   mean        se                                folds n_params gate_mean
+mlp_flat      0.470815  0.039921  [0.526, 0.374, 0.495, 0.382, 0.577]   184865       NaN
+conv1d        0.565246  0.075012  [0.551, 0.454, 0.716, 0.357, 0.749]    38785       NaN
+conv2d        0.523983  0.061511  [0.514, 0.544, 0.544, 0.316, 0.702]    45121       NaN
+conv2d_xattn  0.563278  0.059366  [0.497, 0.631, 0.527, 0.408, 0.753]    26978  0.001714
+total 89s

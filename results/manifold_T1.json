@@ -1,0 +1,88 @@
+{
+ "metrics": {
+  "level": {
+   "n_feat": 284,
+   "pca90": 39,
+   "twonn_id": 7.0,
+   "knn_auc": 0.484,
+   "time_locality": 0.889,
+   "knn_auc_umap": 0.497,
+   "time_locality_umap": 0.965
+  },
+  "change": {
+   "n_feat": 848,
+   "pca90": 179,
+   "twonn_id": 25.9,
+   "knn_auc": 0.521,
+   "time_locality": 0.103,
+   "knn_auc_umap": 0.493,
+   "time_locality_umap": 0.095
+  },
+  "zscore": {
+   "n_feat": 566,
+   "pca90": 83,
+   "twonn_id": 11.9,
+   "knn_auc": 0.523,
+   "time_locality": 0.2,
+   "knn_auc_umap": 0.515,
+   "time_locality_umap": 0.175
+  },
+  "change+zscore": {
+   "n_feat": 1412,
+   "pca90": 181,
+   "twonn_id": 25.0,
+   "knn_auc": 0.514,
+   "time_locality": 0.13,
+   "knn_auc_umap": 0.53,
+   "time_locality_umap": 0.106
+  },
+  "tailored": {
+   "n_feat": 255,
+   "pca90": 88,
+   "twonn_id": 7.8,
+   "knn_auc": 0.493,
+   "time_locality": 0.627,
+   "knn_auc_umap": 0.436,
+   "time_locality_umap": 0.968
+  }
+ },
+ "cka": {
+  "level": {
+   "level": 1.0,
+   "change": 0.3416,
+   "zscore": 0.4518,
+   "change+zscore": 0.4244,
+   "tailored": 0.5068
+  },
+  "change": {
+   "level": 0.3416,
+   "change": 1.0,
+   "zscore": 0.7698,
+   "change+zscore": 0.9349,
+   "tailored": 0.3699
+  },
+  "zscore": {
+   "level": 0.4518,
+   "change": 0.7698,
+   "zscore": 1.0,
+   "change+zscore": 0.9462,
+   "tailored": 0.334
+  },
+  "change+zscore": {
+   "level": 0.4244,
+   "change": 0.9349,
+   "zscore": 0.9462,
+   "change+zscore": 1.0,
+   "tailored": 0.3733
+  },
+  "tailored": {
+   "level": 0.5068,
+   "change": 0.3699,
+   "zscore": 0.334,
+   "change+zscore": 0.3733,
+   "tailored": 1.0
+  }
+ },
+ "k": 15,
+ "purge": 3
+}

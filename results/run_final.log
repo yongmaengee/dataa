@@ -1,0 +1,37 @@
+[   34s] Target_1 xgb[base]                          n_feat= 1412 AUC=0.580±0.019 folds=[0.542, 0.597, 0.622, 0.53, 0.609]
+[   66s] Target_1 xgb[base+domain]                   n_feat= 1457 AUC=0.564±0.015 folds=[0.567, 0.563, 0.571, 0.512, 0.607]
+[  107s] Target_1 xgb[base+domain+exaone]            n_feat= 1777 AUC=0.545±0.015 folds=[0.572, 0.509, 0.546, 0.517, 0.582]
+[  142s] Target_1 xgb[base+domain+experts]           n_feat= 1462 AUC=0.554±0.016 folds=[0.551, 0.542, 0.569, 0.507, 0.602]
+[  185s] Target_1 xgb[base+domain+exaone+experts]    n_feat= 1782 AUC=0.548±0.017 folds=[0.599, 0.531, 0.524, 0.511, 0.577]
+[  185s] Target_1 tabpfn[base]                       AUC=0.587 folds=[0.56, 0.577, 0.563, 0.621, 0.617]
+
+== Target_1 (기준: xgb[base])
+                                  mean     se  diff_vs_base  diff_se  min_fold
+xgb[base]                        0.580  0.019         0.000    0.000     0.530
+xgb[base+domain]                 0.564  0.015        -0.016    0.013     0.512
+xgb[base+domain+exaone]          0.545  0.015        -0.035    0.022     0.509
+xgb[base+domain+experts]         0.554  0.016        -0.026    0.013     0.507
+xgb[base+domain+exaone+experts]  0.548  0.017        -0.032    0.026     0.511
+tabpfn[base]                     0.587  0.013         0.008    0.025     0.560
+→ 선택: tabpfn[base]
+
+[  207s] Target_2 xgb[base]                          n_feat= 1130 AUC=0.968±0.007 folds=[0.972, 0.975, 0.986, 0.965, 0.944]
+[  229s] Target_2 xgb[base+domain]                   n_feat= 1166 AUC=0.967±0.007 folds=[0.971, 0.976, 0.983, 0.963, 0.944]
+[  257s] Target_2 xgb[base+domain+exaone]            n_feat= 1486 AUC=0.965±0.007 folds=[0.976, 0.977, 0.976, 0.949, 0.946]
+[  279s] Target_2 xgb[base+domain+experts]           n_feat= 1171 AUC=0.968±0.007 folds=[0.972, 0.976, 0.984, 0.962, 0.944]
+[  308s] Target_2 xgb[base+domain+exaone+experts]    n_feat= 1491 AUC=0.964±0.007 folds=[0.974, 0.975, 0.976, 0.95, 0.945]
+[  308s] Target_2 tabpfn[base]                       AUC=0.972 folds=[0.979, 0.974, 0.978, 0.972, 0.957]
+
+== Target_2 (기준: xgb[base])
+                                  mean     se  diff_vs_base  diff_se  min_fold
+xgb[base]                        0.968  0.007         0.000    0.000     0.944
+xgb[base+domain]                 0.967  0.007        -0.001    0.001     0.944
+xgb[base+domain+exaone]          0.965  0.007        -0.003    0.004     0.946
+xgb[base+domain+experts]         0.968  0.007        -0.001    0.001     0.944
+xgb[base+domain+exaone+experts]  0.964  0.007        -0.004    0.003     0.945
+tabpfn[base]                     0.972  0.004         0.004    0.004     0.957
+→ 선택: tabpfn[base]
+
+saved /Users/anjungbeom/Desktop/dataa/submissions/public_3반_안중범_3.csv
+saved /Users/anjungbeom/Desktop/dataa/submissions/private_3반_안중범.csv
+total 308s
