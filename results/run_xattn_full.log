@@ -1,0 +1,37 @@
+== 공선성 축소: {'FI': (18, 14, None), 'KE': (51, 48, 24), 'SH': (199, 173, 22), 'WE': (15, 12, None)} (raw, cluster, pca)
+== 그룹 간 CCA (7일 차분)
+       FI    KE    SH    WE
+FI  1.00  0.25  0.19  0.19
+KE  0.25  1.00  0.59  0.46
+SH  0.19  0.59  1.00  0.30
+WE  0.19  0.46  0.30  1.00
+== Target_1: Q=ALL_RAW (단일 스트림) dims={'Q': 285}
+== Target_2: Q=ALL_RAW (단일 스트림) dims={'Q': 285}
+[    13s] stratified Target_1 q_only     best_epoch_median=54.000 auc_seed_mean=0.710 auc_seed_std=0.033 auc_plain=0.736 auc_tta=0.740
+[    18s] stratified Target_1 concat_mlp best_epoch_median=91.000 auc_seed_mean=0.685 auc_seed_std=0.009 auc_plain=0.689 auc_tta=0.694
+[    25s] stratified Target_2 q_only     best_epoch_median=37.000 auc_seed_mean=0.947 auc_seed_std=0.004 auc_plain=0.948 auc_tta=0.948
+[    27s] stratified Target_2 concat_mlp best_epoch_median=20.000 auc_seed_mean=0.952 auc_seed_std=0.003 auc_plain=0.953 auc_tta=0.952
+[    38s] random     Target_1 q_only     best_epoch_median=58.000 auc_seed_mean=0.723 auc_seed_std=0.018 auc_plain=0.742 auc_tta=0.740
+[    41s] random     Target_1 concat_mlp best_epoch_median=36.000 auc_seed_mean=0.711 auc_seed_std=0.016 auc_plain=0.720 auc_tta=0.716
+[    47s] random     Target_2 q_only     best_epoch_median=15.000 auc_seed_mean=0.939 auc_seed_std=0.009 auc_plain=0.946 auc_tta=0.946
+[    48s] random     Target_2 concat_mlp best_epoch_median=13.000 auc_seed_mean=0.933 auc_seed_std=0.004 auc_plain=0.933 auc_tta=0.934
+[    53s] time       Target_1 q_only     best_epoch_median=4.000 auc_seed_mean=0.522 auc_seed_std=0.037 auc_plain=0.486 auc_tta=0.482
+[    54s] time       Target_1 concat_mlp best_epoch_median=1.000 auc_seed_mean=0.549 auc_seed_std=0.008 auc_plain=0.549 auc_tta=0.549
+[    58s] time       Target_2 q_only     best_epoch_median=8.000 auc_seed_mean=0.922 auc_seed_std=0.022 auc_plain=0.935 auc_tta=0.936
+[    59s] time       Target_2 concat_mlp best_epoch_median=1.000 auc_seed_mean=0.886 auc_seed_std=0.011 auc_plain=0.890 auc_tta=0.894
+
+== Validation AUC (full_raw, seed 앙상블)
+                                 auc_plain  auc_tta  auc_seed_mean  auc_seed_std
+scheme     target   variant                                                    
+stratified Target_1 q_only          0.736    0.740          0.710         0.033
+                    concat_mlp      0.689    0.694          0.685         0.009
+           Target_2 q_only          0.948    0.948          0.947         0.004
+                    concat_mlp      0.953    0.952          0.952         0.003
+random     Target_1 q_only          0.742    0.740          0.723         0.018
+                    concat_mlp      0.720    0.716          0.711         0.016
+           Target_2 q_only          0.946    0.946          0.939         0.009
+                    concat_mlp      0.933    0.934          0.933         0.004
+time       Target_1 q_only          0.486    0.482          0.522         0.037
+                    concat_mlp      0.549    0.549          0.549         0.008
+           Target_2 q_only          0.935    0.936          0.922         0.022
+                    concat_mlp      0.890    0.894          0.886         0.011
