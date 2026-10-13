@@ -8,3 +8,8 @@
 *.xlsx
 CLAUDE.md
 docs/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+results/*.log
+.DS_Store
