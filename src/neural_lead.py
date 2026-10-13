@@ -91,5 +91,23 @@ class LeadXAttn(nn.Module):
         return float(torch.tanh(self.xattn.gate)) if self.use_cross else None
 
 
-MODELS = {"mlp": ResMLP, "conv1d": ResConv1D, "xattn": LeadXAttn,
+class PlainConv1D(nn.Module):
+    """대조군: residual·LayerNorm 없는 conv 스택 (세션 1 구조)."""
+
+    def __init__(self, dims, d=64, L=2, drop=0.3, **_):
+        super().__init__()
+        self.inp = nn.Sequential(nn.Dropout(drop), nn.Linear(dims["Q"], d), nn.GELU())
+        layers = []
+        for _ in range(L):
+            layers += [nn.Conv1d(d, d, 3, padding=1), nn.GELU(), nn.Dropout(drop), nn.Conv1d(d, d, 3, padding=1), nn.GELU()]
+        self.conv = nn.Sequential(*layers)
+        self.out = nn.Sequential(nn.Linear(2 * d, d), nn.GELU(), nn.Dropout(drop), nn.Linear(d, d), nn.GELU())
+        self.head = nn.Sequential(nn.Dropout(drop), nn.Linear(d, 1))
+
+    def forward(self, b):
+        h = self.conv(self.inp(b["Q"]).transpose(1, 2)).transpose(1, 2)
+        return self.head(self.out(torch.cat([h[:, -1], h.mean(1)], -1))).squeeze(-1)
+
+
+MODELS = {"mlp": ResMLP, "conv1d": ResConv1D, "conv1d_plain": PlainConv1D, "xattn": LeadXAttn,
           "xattn_nocross": lambda dims, **kw: LeadXAttn(dims, use_cross=False, **kw)}

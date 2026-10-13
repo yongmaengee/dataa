@@ -36,10 +36,14 @@ p.add_argument("--W", type=int, default=10)
 p.add_argument("--device", default="mps" if torch.backends.mps.is_available() else "cpu")
 p.add_argument("--quick", action="store_true")
 p.add_argument("--scheme", default="wf5", choices=["wf5", "wf10"])
+p.add_argument("--no-aug", action="store_true", help="증강(노이즈·feature/시점 dropout) 끄기")
+p.add_argument("--refit-full", action="store_true", help="inner tail로 epoch 수 결정 후 fold train 전체로 고정 epoch 재학습")
 args = p.parse_args()
 CFG = dict(lr=1e-3, wd=2e-2, bs=64, max_epochs=120, patience=15, noise=0.15, feat_drop=0.2, step_drop=0.15, drop=0.3, d=64, L=2)
 if args.quick:
     args.seeds, CFG["max_epochs"], CFG["patience"] = 1, 10, 4
+if args.no_aug:
+    CFG["noise"], CFG["feat_drop"], CFG["step_drop"] = 0.0, 0.0, 0.0
 dev = args.device
 
 df, is_train = load()
@@ -85,7 +89,8 @@ def predict(model, X, idx):
     return torch.sigmoid(model(take(X, torch.as_tensor(idx, device=dev)))).cpu().numpy()
 
 
-def fit(name, X, dims, tr_in, es, seed):
+def fit(name, X, dims, tr_in, es, seed, epochs=None):
+    """es=None이면 epochs만큼 고정 학습(early stopping 없음). 반환: (model, best_epoch)."""
     torch.manual_seed(seed)
     np.random.seed(seed)
     rng = np.random.default_rng(seed)
@@ -93,8 +98,8 @@ def fit(name, X, dims, tr_in, es, seed):
     opt = torch.optim.AdamW(model.parameters(), lr=CFG["lr"], weight_decay=CFG["wd"])
     yt = torch.as_tensor(y, device=dev)
     tt = torch.as_tensor(np.nan_to_num(teacher, nan=-1.0), device=dev) if teacher is not None else None
-    best, best_state, wait = -1, None, 0
-    for ep in range(CFG["max_epochs"]):
+    best, best_state, wait, best_ep = -1, None, 0, epochs or CFG["max_epochs"]
+    for ep in range(1, (epochs or CFG["max_epochs"]) + 1):
         model.train()
         for s in range(0, len(tr_in), CFG["bs"]):
             bi = torch.as_tensor(rng.permutation(tr_in)[s:s + CFG["bs"]], device=dev)
@@ -106,20 +111,23 @@ def fit(name, X, dims, tr_in, es, seed):
                     soft = F.binary_cross_entropy_with_logits(logit[has], tt[bi][has])
                     loss = args.kd_alpha * loss + (1 - args.kd_alpha) * soft
             opt.zero_grad(), loss.backward(), opt.step()
+        if es is None:
+            continue
         auc = roc_auc_score(y[es], predict(model, X, es))
         if auc > best:
-            best, best_state, wait = auc, copy.deepcopy(model.state_dict()), 0
+            best, best_state, wait, best_ep = auc, copy.deepcopy(model.state_dict()), 0, ep
         elif (wait := wait + 1) >= CFG["patience"]:
             break
-    model.load_state_dict(best_state)
-    return model
+    if best_state is not None:
+        model.load_state_dict(best_state)
+    return model, best_ep
 
 
 t0 = time.time()
-tag = ("_kd" if args.kd else "") + ("" if args.scheme == "wf5" else f"_{args.scheme}")
+tag = ("_kd" if args.kd else "") + ("" if args.scheme == "wf5" else f"_{args.scheme}") + ("_refit" if args.refit_full else "") + ("_noaug" if args.no_aug else "")
 res = {"config": {**CFG, **vars(args)}, "runs": {}}
 for name in args.models:
-    aucs, gates, oof, tr_aucs = [], [], np.full(n, np.nan), []
+    aucs, gates, oof, tr_aucs, eps = [], [], np.full(n, np.nan), [], []
     for tr, va in folds:
         tr = tr[tr < va[0] - 3 - MAX_LEAD]  # 학습 행의 lead가 val 행을 참조하지 않도록
         fm = np.zeros(len(df), bool)
@@ -128,7 +136,10 @@ for name in args.models:
         tr_in, es = tr[:-(60 + MAX_LEAD)], tr[-60:]
         probs = []
         for seed in range(args.seeds):
-            m = fit(name, X, dims, tr_in, es, seed)
+            m, ep = fit(name, X, dims, tr_in, es, seed)
+            if args.refit_full:  # 같은 seed, 결정된 epoch 수로 fold train 전체 재학습
+                m, _ = fit(name, X, dims, tr, None, seed, epochs=ep)
+                eps.append(ep)
             probs.append(predict(m, X, va))
             tr_aucs.append(roc_auc_score(y[tr_in], predict(m, X, tr_in)))
             if (g := m.gate() if hasattr(m, "gate") else None) is not None:
@@ -136,7 +147,8 @@ for name in args.models:
         oof[va] = np.mean(probs, 0)
         aucs.append(roc_auc_score(y[va], oof[va]))
     r = dict(mean=float(np.mean(aucs)), se=float(np.std(aucs, ddof=1) / np.sqrt(len(aucs))), folds=np.round(aucs, 3).tolist(),
-             train_auc=float(np.mean(tr_aucs)), scheme=args.scheme,
+             train_auc=float(np.mean(tr_aucs)), scheme=args.scheme, refit_full=args.refit_full,
+             epochs_median=float(np.median(eps)) if eps else None,
              n_params=sum(p.numel() for p in m.parameters()), oof={"idx": np.where(~np.isnan(oof))[0].tolist(), "p": oof[~np.isnan(oof)].tolist()})
     if gates:
         r["gate_mean"] = float(np.mean(gates))

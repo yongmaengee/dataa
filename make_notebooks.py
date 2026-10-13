@@ -36,7 +36,7 @@ from src.neural_lead import MODELS
 from src.train import windows
 
 SEEDS, W, DEVICE = {a.seeds}, 10, "mps" if torch.backends.mps.is_available() else "cpu"
-T1_MODEL, KD, KD_ALPHA, BLEND = "{a.t1_model}", {kd}, 0.3, {not a.no_blend}
+T1_MODEL, BLEND = "{a.t1_model}", {not a.no_blend}{", KD_ALPHA = 0.3" if False else ""}
 CFG = dict(lr=1e-3, wd=2e-2, bs=64, max_epochs=120, patience=15, noise=0.15, feat_drop=0.2, step_drop=0.15, drop=0.3, d=64, L=2)
 def seed_all(s):
     random.seed(s); np.random.seed(s); torch.manual_seed(s)
@@ -83,8 +83,7 @@ def augment(xb):
 def predict(model, idx):
     model.eval(); return torch.sigmoid(model(take(torch.as_tensor(idx, device=DEVICE)))).cpu().numpy()
 yt = torch.as_tensor(y[:, 0], device=DEVICE)
-tt = torch.as_tensor(np.nan_to_num(teacher, nan=-1.0), device=DEVICE) if KD else None
-tr_in, es = fit_idx[:-(60 + MAX_LEAD)], fit_idx[-60:]   # early stopping용 inner tail
+""" + ("tt = torch.as_tensor(np.nan_to_num(teacher, nan=-1.0), device=DEVICE)  # teacher 확률 (없는 행 = -1)\nKD_ALPHA = 0.3\n" if kd else "") + """tr_in, es = fit_idx[:-(60 + MAX_LEAD)], fit_idx[-60:]   # early stopping용 inner tail
 def fit(seed):
     seed_all(seed); rng = np.random.default_rng(seed)
     model = MODELS[T1_MODEL](dims, d=CFG["d"], L=CFG["L"], drop=CFG["drop"], W=W).to(DEVICE)
@@ -95,9 +94,7 @@ def fit(seed):
         for s in range(0, len(tr_in), CFG["bs"]):
             bi = torch.as_tensor(rng.permutation(tr_in)[s:s + CFG["bs"]], device=DEVICE)
             logit = model(augment(take(bi))); loss = F.binary_cross_entropy_with_logits(logit, yt[bi])
-            if tt is not None and (has := tt[bi] >= 0).any():
-                loss = KD_ALPHA * loss + (1 - KD_ALPHA) * F.binary_cross_entropy_with_logits(logit[has], tt[bi][has])
-            opt.zero_grad(); loss.backward(); opt.step()
+""" + ("            if (has := tt[bi] >= 0).any():\n                loss = KD_ALPHA * loss + (1 - KD_ALPHA) * F.binary_cross_entropy_with_logits(logit[has], tt[bi][has])\n" if kd else "") + """            opt.zero_grad(); loss.backward(); opt.step()
         from sklearn.metrics import roc_auc_score
         auc = roc_auc_score(y[es, 0], predict(model, es))
         if auc > best: best, state, wait = auc, copy.deepcopy(model.state_dict()), 0
