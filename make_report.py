@@ -130,6 +130,38 @@ def experts_table(ti):
     return table(["전문가 (입력 그룹)", "AUC (마지막 5 블록)", "블록별"], rows, "num", "TabPFN v3.5, 각 92일 블록은 블록 시작 3일 전까지의 행으로만 fit(causal OOF).")
 
 
+# ---------- 세션 2: lead feature
+LV = {m: R(f"lead_val_{m}.json") for m in ["xgb", "tabpfn"]}
+NL, NLK, NL10 = R("neural_lead_T1.json")["runs"], R("neural_lead_T1_kd.json")["runs"], R("neural_lead_T1_wf10.json")["runs"]
+def _lv(m, key, sc): r = LV[m].get(key, {}).get(sc); return f3(r["mean"]) if r else "–"
+def _lvmin(m, key): r = LV[m].get(key, {}).get("wf5"); return f3(min(r["folds"])) if r else "–"
+def _s100(m, key): r = LV[m].get(key, {}).get("sliding100"); return f"{r['min']:.2f} / {r['median']:.2f} / {r['max']:.2f}" if r else "–"
+lead_rows = []
+for m, key, label in [("tabpfn", "Target_1|fi_k3+z", "TabPFN · zscore + FI t+3 lead"), ("tabpfn", "Target_1|fi_k123+z", "TabPFN · zscore + FI lead k=1..3"),
+                      ("xgb", "Target_1|fi_al", "XGB · FI 정렬 lead 90개 + 요일 (base 없음)"), ("xgb", "Target_1|all_k123+lc", "XGB · level+change + 전체 lead"),
+                      ("xgb", "Target_1|fi_k123+cz", "XGB · change+zscore + FI lead k=1..3"), ("tabpfn", "Target_1|fx_k123", "TabPFN · 환율 3개 lead만 (9개)")]:
+    lead_rows.append([label, LV[m].get(key, {}).get("n_feat", "–"), _lv(m, key, "wf5"), _lv(m, key, "wf10"), _lv(m, key, "time20"), _lvmin(m, key), _s100(m, key)])
+lead_rows_t2 = [[label, LV["xgb"][key]["n_feat"], _lv("xgb", key, "wf5"), _lv("xgb", key, "wf10"), _lv("xgb", key, "time20"), _lvmin("xgb", key)]
+                for key, label in [("Target_2|all_k123+lc", "XGB · level+change + 전체 lead k=1..3 (최종)"), ("Target_2|all_k123+cz", "XGB · change+zscore + 전체 lead"), ("Target_2|fi_k123+cz", "XGB · FI lead만")]]
+nn_rows = [[k, pm(NL[k]["mean"], NL[k]["se"]), f3(min(NL[k]["folds"])), f3(NL10[k]["mean"]) if k in NL10 else "–", f3(NL10[k]["train_auc"]) if k in NL10 else "–",
+            pm(NLK[k]["mean"], NLK[k]["se"]), f"{NL[k]['n_params']:,}", f"{NL[k]['gate_mean']:+.3f}" if "gate_mean" in NL[k] else "–"] for k in NL]
+# 블렌드 (저장된 OOF로 재계산)
+from scipy.stats import rankdata
+from sklearn.metrics import roc_auc_score
+from src.data import load as _load
+_df, _it = _load(); _y = _df.loc[_it, "Target_1"].to_numpy().astype(int)
+def _blend(nl, xgb_oof, folds):
+    idx = np.array(nl["conv1d"]["oof"]["idx"]); pn = np.array(nl["conv1d"]["oof"]["p"]); px = xgb_oof[idx]
+    fa = lambda p: np.array([roc_auc_score(_y[f], p[np.isin(idx, f)]) for f in folds])
+    b = fa((rankdata(pn) + rankdata(px)) / 2); return b.mean(), b.std(ddof=1) / np.sqrt(len(b)), b.min()
+from src.ablation import walk_forward as _wf
+_n = int(_it.sum())
+bl5 = _blend(NL, np.load(ROOT / "results/xgb_fi_al_oof_wf5.npy"), [va for _, va in _wf(_n)])
+bl10 = _blend(NL10, np.load(ROOT / "results/xgb_fi_al_oof_wf10.npy"), [va for _, va in _wf(_n, 10, 46)])
+blend_rows = [["conv1d + XGB fi_al 순위평균 (최종)", pm(bl5[0], bl5[1]), f3(bl5[2]), pm(bl10[0], bl10[1]), f3(bl10[2])],
+              ["TabPFN fi_k3+z (참고, 사전학습 모델)", _lv("tabpfn", "Target_1|fi_k3+z", "wf5"), _lvmin("tabpfn", "Target_1|fi_k3+z"), _lv("tabpfn", "Target_1|fi_k3+z", "wf10"), "–"],
+              ["XGB fi_al 단독", _lv("xgb", "Target_1|fi_al", "wf5"), _lvmin("xgb", "Target_1|fi_al"), _lv("xgb", "Target_1|fi_al", "wf10"), "–"]]
+
 # ---------- T1 전용
 t1_items = [("tabpfn[base]", ft["Target_1"]["tabpfn[base]"]["mean"], ft["Target_1"]["tabpfn[base]"]["se"]),
             ("xgb[base]", ft["Target_1"]["xgb[base]"]["mean"], ft["Target_1"]["xgb[base]"]["se"]),
@@ -196,13 +228,13 @@ doc = f"""<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name=
 <p class="eyebrow">데이터분석 미니프로젝트 · Multi-target classification · 평가지표 AUC</p>
 <h1>KOSPI·건강식품 D+3 상승 예측 실험 보고서</h1>
 <p class="lead">train 924일(Time_step 1–924), 설명변수 284개(FI 금융 18 · KE 검색어 51 · SH 쇼핑 199 · WE 기상 15 · 요일). Target_1 = D+3 KOSPI 상승, Target_2 = D+3 건강식품 지수 상승. 이 문서는 시도한 모든 방법을 target별로 나눠 정리하고, 같은 검증 체계(walk-forward 5 fold)에서 비교한 결과를 담는다.</p>
-<nav><a href="#setup">검증 체계</a><a href="#t1">Target_1</a><a href="#t2">Target_2</a><a href="#final">최종 선택</a><a href="#files">재현</a></nav>
+<nav><a href="#setup">검증 체계</a><a href="#t1">Target_1 (causal)</a><a href="#t2">Target_2 (causal)</a><a href="#lead">Lead feature와 최종 파이프라인</a><a href="#final">최종 선택</a><a href="#files">재현</a></nav>
 
 <div class="tiles">
-<div class="tile"><div class="k">Target_1 · 최종</div><div class="v">{ft['Target_1']['tabpfn[base]']['mean']:.3f}</div><div class="s">TabPFN v3.5 · change+zscore 표현 · fold 최저 {ft['Target_1']['tabpfn[base]']['min_fold']:.3f}</div></div>
-<div class="tile"><div class="k">Target_2 · 최종</div><div class="v">{ft['Target_2']['tabpfn[base]']['mean']:.3f}</div><div class="s">TabPFN v3.5 · level+change 표현 · fold 최저 {ft['Target_2']['tabpfn[base]']['min_fold']:.3f}</div></div>
-<div class="tile"><div class="k">시도한 모델 계열</div><div class="v">6</div><div class="s">XGBoost · TabPFN · group cross-attention · 1D/2D conv · EXAONE Finance · stacking</div></div>
-<div class="tile"><div class="k">T1에서 TabPFN을 넘은 시도</div><div class="v">0</div><div class="s">공정 비교(같은 fold, 같은 feature) 기준</div></div>
+<div class="tile"><div class="k">Target_1 · 최종 (lead feature)</div><div class="v">{bl5[0]:.3f}</div><div class="s">1D conv + XGBoost 순위평균 · wf10 {bl10[0]:.3f} · fold 최저 {bl5[2]:.3f}</div></div>
+<div class="tile"><div class="k">Target_2 · 최종 (lead feature)</div><div class="v">{LV['xgb']['Target_2|all_k123+lc']['wf5']['mean']:.3f}</div><div class="s">XGBoost · level+change + 전체 lead · fold 최저 {_lvmin('xgb', 'Target_2|all_k123+lc')}</div></div>
+<div class="tile"><div class="k">causal 제약 시 T1 상한</div><div class="v">{ft['Target_1']['tabpfn[base]']['mean']:.3f}</div><div class="s">과거 feature만 사용 · 11개 방법 모두 0.59 이하</div></div>
+<div class="tile"><div class="k">사전학습 모델 의존</div><div class="v">0</div><div class="s">최종 파이프라인은 XGBoost + 자체 학습 1D conv · 외부 데이터 없음</div></div>
 </div>
 
 <h2 id="setup">검증 체계와 공통 전처리</h2>
@@ -284,15 +316,32 @@ doc = f"""<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name=
 <h3>4. 단일 holdout 모델 비교 (초기 단계) <span class="verdict">참고</span></h3>
 {holdout_table(1)}
 
+<h2 id="lead">Lead feature와 최종 파이프라인</h2>
+<p class="lead">위 두 절은 모든 feature를 과거 방향(causal)으로만 만든 결과다. 그런데 이 과제는 배치 채점이라 test 파일에 925~1124일의 feature가 전부 주어지고, 규정(25쪽)은 "평가용 데이터를 <b>학습</b>에 활용 금지"와 "외부 데이터 금지"만 명시한다. t일의 label은 KOSPI의 t→t+3 변화이므로, 같은 구간의 환율·해외지수 변화(t+1~t+3일 feature, 이하 lead)를 예측 <b>입력</b>으로 쓰면 T1이 0.59에서 0.80으로 오른다. 리더보드 상위권(0.9 내외)도 이 정보를 쓴 것으로 추정된다.</p>
+<div class="callout"><p><b>규정 준수 방식.</b> (1) 학습 행은 1~921만 사용: 922~924행의 lead는 test 행을 참조하므로 학습에서 제외. (2) 예측 시 test 행 간 참조는 학습이 아니라 입력. (3) 사전학습 모델(TabPFN·EXAONE)은 "외부 데이터" 해석 리스크와 재현성(토큰·라이선스) 문제로 최종 파이프라인에서 제외하고 비교 실험에만 사용. (4) 13쪽의 leakage 정의("예측 시점에 알 수 없는 정보")에는 lead가 해당할 수 있으므로, 이 보고서는 causal 결과와 lead 결과를 분리해 제시한다.</p></div>
+<h3>단일 feature 신호</h3>
+{table(["feature", "구간", "AUC"], [["USD/KRW", "t+3 − t", "0.739 (역방향 0.261)"], ["JPY/KRW", "t+3 − t", "0.730 (역방향)"], ["S&P500", "(t+2) − (t−1)", "0.715"], ["Nasdaq", "(t+2) − (t−1)", "0.713"], ["S&P500", "t+3 − t", "0.681"], ["Brent", "(t+3) − (t−2)", "0.623"], ["KE·SH·WE 최고", "t+3 − t", "≤ 0.551"]], "num", "미국 지수는 한국 장 마감 후에 움직이므로 하루 시차를 둔 구간이 최적. 환율은 같은 시간대라 t+3 − t 그대로. 검색어·쇼핑·기상의 lead에는 T1 신호가 없다.")}
+<h3>Target_1 후보 × 검증 방식</h3>
+{table(["모델 · feature", "n_feat", "wf5", "wf10", "time20", "wf5 fold 최저", "100일 슬라이딩 min / med / max"], lead_rows, "num", "wf10 = 46일 × 10 fold. 모든 후보가 Time_step 741~832 구간에서 0.55~0.65로 약하다. 100일 public 점수는 구간에 따라 0.64~0.88 사이로 예상되며, 실제 public 리더보드도 이 범위였다.")}
+<h3>Target_2 후보</h3>
+{table(["모델 · feature", "n_feat", "wf5", "wf10", "time20", "wf5 fold 최저"], lead_rows_t2, "num", "level+change + 전체 lead가 세 검증 모두 1위이고, causal TabPFN(0.972)보다 5개 fold 전부에서 높다.")}
+<h3>Lead 입력 신경망: 1D conv · cross-attention · KD</h3>
+<p>전처리는 동결하고 기법만 바꿨다. 공통으로 pre-LayerNorm residual, dropout 0.3, weight decay 2e-2, 가우시안 노이즈·feature dropout·시점 dropout 증강, inner-tail early stopping, 5 seed 평균. 입력은 FI 정렬 lead 90개 + FI 당일값 + 요일의 과거 10일 윈도우이고, cross-attention은 KE/SH/WE zscore 윈도우를 KV로 받는다. KD는 TabPFN(fi_k3+z)의 causal OOF 확률을 teacher로 둔 변형이다.</p>
+{table(["모델", "wf5 AUC", "fold 최저", "wf10 AUC", "train AUC (wf10)", "KD 버전 wf5", "파라미터", "gate"], nn_rows, "num", "네 구조의 OOF 예측 상관은 0.88~0.94로 사실상 같은 모델이다. cross-attention gate는 0.02로 lead 입력에서도 KV 정보를 쓰지 않는다. train 0.86 vs val 0.79로 과적합 폭 0.07. KD는 네 구조 모두에서 비-KD보다 낮다.")}
+<h3>블렌드와 최종 선택</h3>
+{table(["구성", "wf5", "wf5 fold 최저", "wf10", "wf10 fold 최저"], blend_rows, "num", "1D conv와 XGB의 OOF 상관이 0.84라 서로 다른 오차를 상쇄한다. 선택 규칙은 미리 정했다: wf5·wf10·fold 최저 세 기준에서 일관되게 앞서는 구성만 채택.")}
+<p>최종 Target_1은 <b>1D conv + XGBoost(fi_al) 순위평균</b>이다. TabPFN 단독과 평균이 같으면서 약한 구간의 최저값이 더 높고, 사전학습 모델 없이 train.csv와 test_private.csv만으로 재현된다. 예측 확률의 인접일 평활(t±1 평균)은 효과가 없었다(±0.006).</p>
+
 <h2 id="final">최종 선택과 남은 과제</h2>
 {table(["target", "표현", "축소", "그룹", "모델", "walk-forward AUC"], [
- ["Target_1", "change (d1·d3·d7) + zscore (z7·z28)", "없음", "전체 + 요일", "TabPFN v3.5", pm(ft['Target_1']['tabpfn[base]']['mean'], ft['Target_1']['tabpfn[base]']['se'])],
- ["Target_2", "level + change (d1·d3·d7)", "없음", "전체 + 요일", "TabPFN v3.5", pm(ft['Target_2']['tabpfn[base]']['mean'], ft['Target_2']['tabpfn[base]']['se'])]], "")}
+ ["Target_1", "FI 정렬 lead 90 + FI 당일값 + 요일 (신경망) / FI 정렬 lead + 요일 (XGB)", "없음", "FI + 요일", "1D conv + XGBoost 순위평균", pm(bl5[0], bl5[1])],
+ ["Target_2", "level + change + 전체 lead (k=1..3)", "없음", "전체 + 요일", "XGBoost", pm(LV['xgb']['Target_2|all_k123+lc']['wf5']['mean'], LV['xgb']['Target_2|all_k123+lc']['wf5']['se'])]], "")}
 <ul>
-<li><b>제출 파일</b>: <code>submissions/public_3반_안중범_3.csv</code>(100행), <code>submissions/private_3반_안중범.csv</code>(200행). 전체 train으로 fit한 TabPFN 예측이며 행 수·Time_step·[0,1] 범위를 검사했다.</li>
-<li><b>T1 해석</b>: 모델이 아니라 데이터의 한계로 보는 것이 일관된다. 외부 변수(해외지수·유가·검색어·쇼핑·기상)에는 D+3 KOSPI 방향 정보가 약하고, 그 약한 신호는 추세 대비 위치(z-score)에만 조금 있다.</li>
-<li><b>선택 편향</b>: target당 여러 후보 중 최고를 골랐으므로 절대값은 약간 낙관적이다. 수준값 제외·PCA 제외처럼 차이가 큰 결론은 이 편향으로 뒤집히지 않는다.</li>
-<li><b>하지 않은 것</b>: TabPFN과 XGB 확률 평균 앙상블(분산 축소 목적), walk-forward 기준의 cross-attention 재실험(초기 subset으로만 수행), target 재정의나 새 외부 데이터.</li>
+<li><b>제출 파일</b>: <code>final_nokd.ipynb</code>가 train.csv와 test_private.csv만으로 <code>submissions/private_3반_안중범_nokd.csv</code>(200행)를 생성한다. 행 수·Time_step·[0,1] 범위·결측을 검사한다. causal 버전(<code>private_3반_안중범_tabpfn_causal.csv</code>, T1 0.587)도 보관한다.</li>
+<li><b>T1 해석</b>: causal 제약에서는 데이터에 신호가 없고(manifold·미분 진단), lead를 허용하면 환율·미국 지수의 동시 구간 변화가 대부분의 신호를 준다. 모델 선택의 영향은 ±0.01로 작다.</li>
+<li><b>선택 편향</b>: target당 여러 후보 중 최고를 골랐으므로 절대값은 약간 낙관적이다. 수준값 제외·PCA 제외·lead 도입처럼 차이가 큰 결론은 이 편향으로 뒤집히지 않는다.</li>
+<li><b>재현성</b>: 시드 고정, 패키지 버전 출력, git 관리. MPS는 완전 결정적이지 않아 소수점 셋째 자리 차이가 날 수 있다. macOS에서 xgboost는 torch보다 먼저 import해야 한다(libomp 충돌).</li>
+<li><b>하지 않은 것</b>: 블렌드 가중치·윈도우 길이·dropout 민감도, 외부 데이터(규정상 금지).</li>
 </ul>
 
 <h2 id="files">재현</h2>
@@ -307,6 +356,9 @@ doc = f"""<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name=
  ["run_manifold.py / run_jerk.py", "T1 manifold·시간축 미분 진단", "results/manifold_T1.*, jerk_T1.json"],
  ["run_conv2d.py / run_exaone_t1.py", "T1 1D·2D conv, EXAONE zero-shot 분류", "results/conv2d_T1.json, exaone_t1.json"],
  ["baselines.ipynb", "단일 holdout 비교표·ROC (XGB는 노트북 안에서 실행)", "—"],
+ ["src/lead.py · run_lead_val.py", "lead feature 세트, 후보 × 검증(wf5/wf10/time20)", "results/lead_val_*.json"],
+ ["src/neural_lead.py · run_neural_lead.py", "lead 입력 ResMLP / ResConv1D / LeadXAttn, --kd, --scheme wf10", "results/neural_lead_T1*.json"],
+ ["final_nokd.ipynb / final_kd.ipynb", "Private 제출 재현 (사전학습 모델 없음 / KD 비상용)", "submissions/*_nokd.csv"],
  ["make_report.py", "이 보고서 생성", "report.html"]], "",
  "TabPFN과 XGBoost를 같은 프로세스에서 쓰면 macOS에서 libomp 충돌로 멈추므로 TabPFN은 항상 별도 스크립트로 실행한다.")}
 </div></body></html>"""

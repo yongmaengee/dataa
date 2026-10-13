@@ -26,9 +26,10 @@ def cells(kd):
 - 검증 근거: walk-forward 5 fold (`record.md`, `report.html`)
 - 재현: 시드 고정. MPS는 완전 결정적이지 않아 소수점 셋째 자리 수준의 차이가 있을 수 있음. 완전 재현이 필요하면 `DEVICE="cpu"`
 """),
-          code(f"""import copy, json, random, sys, time
-import numpy as np, pandas as pd, torch, torch.nn.functional as F, xgboost, sklearn
+          code(f"""import xgboost  # macOS libomp 충돌 방지: 반드시 torch보다 먼저 import (torch 먼저 올리면 커널 크래시)
 from xgboost import XGBClassifier
+import copy, json, random, sys, time
+import numpy as np, pandas as pd, torch, torch.nn.functional as F, sklearn
 from src.data import ROOT, TARGETS, load
 from src.lead import MAX_LEAD, lead_frame, streams
 from src.neural_lead import MODELS
